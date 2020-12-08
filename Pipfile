@@ -1,0 +1,17 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+csci-utils = {editable = true, git = "https://github.com/csci-e-29/2020fa-csci-utils-AbeSheikh92"}
+nltk = "*"
+gensim = "*"
+youtube-transcript-api = "*"
+selenium = "*"
+atomicwrites = "*"
+
+[requires]
+python_version = "3.7"
