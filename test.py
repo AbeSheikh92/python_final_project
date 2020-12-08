@@ -173,44 +173,35 @@ class DataCleaningTests(TestCase):
         self.assertTrue(check_gibberish(gibberish_list))
 
 
+"""
 class CaptionsTests(TestCase):
-    """
-    Tests the proper accessing of YouTube video Id elements via
-    the caption API
-    """
+    # Tests the proper accessing of YouTube video Id elements via
+    # the caption API
 
     def setUp(self) -> None:
-        """
-        Executes prior to every test ensuring test output files do not already exist
-        """
+        # Executes prior to every test ensuring test output files do not already exist
 
         target_path = os.path.join(os.path.abspath('data'), 'test.txt')
         if os.path.exists(target_path):
             os.remove(target_path)
 
     def tearDown(self) -> None:
-        """
-        Executes after every test ensuring test output files do not still exist
-        """
+        # Executes after every test ensuring test output files do not still exist
 
         self.setUp()
 
     def test_get_video_ids(self):
-        """
-        This is the only test that makes a quick YouTube call (DESIGNED FOR CHROME!!!)
-        """
-
+        # This is the only test that makes a quick YouTube call (DESIGNED FOR CHROME!!!)
+        
         # Calls the caption API requesting a subset of YouTube video Ids
         # related to the 'anderson cooper' YouTube search
         video_ids_set = get_video_ids("anderson cooper", 0, 0, "by cnn")
 
         # Ensures the returned unique set of video Ids is not empty
         self.assertTrue(len(video_ids_set) > 0)
-
+    
     def test_compile_all_captions(self):
-        """
-        Ensures files are properly concatenated when 'compile_all_functions' is called
-        """
+        # Ensures files are properly concatenated when 'compile_all_functions' is called
 
         # Represents the root directory of files to concatenate
         test_root = os.path.abspath("data")
@@ -236,6 +227,7 @@ class CaptionsTests(TestCase):
         # Ensures compilation file size is correct. This is of course
         # an estimate of how accurate the function being tested is.
         self.assertEqual(os.path.getsize(target_path), total_file_length)
+"""
 
 
 class WordEmbeddingTests(TestCase):
