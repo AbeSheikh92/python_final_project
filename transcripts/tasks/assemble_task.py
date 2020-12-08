@@ -21,7 +21,7 @@ class CreateAccumulatedModel(ExternalTask):  # pragma: no cover
 
     # Parameter representing directory path where model is to be saved
     # model_output_target_dir = Parameter(default="models/ALL_CAPTIONS")
-    model_output_target_dir = Parameter(default=os.path.join("models, ALL_CAPTIONS"))
+    model_output_target_dir = Parameter(default=os.path.join("models", "ALL_CAPTIONS"))
 
     # Parameter representing path where model is to be saved
     trained_model_target_file = Parameter(default="trained_embedding.model")

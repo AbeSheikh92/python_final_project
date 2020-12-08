@@ -18,7 +18,7 @@ class FeedToModel(Task):  # pragma: no cover
     """
 
     # Parameter representing the local file root
-    MODEL_ROOT = Parameter(default=os.path.abspath(os.path.join("data, models")))
+    MODEL_ROOT = Parameter(default=os.path.abspath(os.path.join("data", "models")))
 
     # Parameter representing the captions target file
     video_captions_target_file = Parameter(default="cnn_captions.txt")
@@ -83,7 +83,7 @@ class AnalyzeModelResults(Task):  # pragma: no cover
     """
 
     # Parameter representing the local data root
-    RESULTS_ROOT = Parameter(default=os.path.abspath(os.path.join("data, models")))
+    RESULTS_ROOT = Parameter(default=os.path.abspath(os.path.join("data", "models")))
 
     # Parameter representing the captions target file
     video_captions_target_file = Parameter(default="cnn_captions.txt")
