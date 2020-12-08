@@ -11,6 +11,10 @@ from transcripts.data_cleaning import (
     is_english,
     check_gibberish,
 )
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('words')
 
 
 """
