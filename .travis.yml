@@ -12,9 +12,9 @@ before_install:
 install:
 - pip install pipenv
 - pipenv install --system --deploy --ignore-pipfile
-- python3 -c "import nltk; nltk.download('punkt')"
-- python3 -c "import nltk; nltk.download('stopwords')"
-- python3 -c "import nltk; nltk.download('words')"
+- "python3 -m nltk.downloader punkt"
+- "python3 -m nltk.downloader stopwords"
+- "python3 -m nltk.downloader words"
 
 stages:
   - test
