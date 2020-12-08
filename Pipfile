@@ -4,6 +4,8 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pytest = "*"
+pytest-cov = "*"
 
 [packages]
 csci-utils = {editable = true, git = "https://github.com/csci-e-29/2020fa-csci-utils-AbeSheikh92"}
