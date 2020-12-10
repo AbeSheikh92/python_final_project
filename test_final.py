@@ -1,9 +1,10 @@
 import os
 from unittest import TestCase
+from tempfile import TemporaryDirectory
 from gensim.models import Word2Vec
-from transcripts.captions import get_video_ids
+from atomicwrites import atomic_write
 from transcripts.word_embedding import construct_embedding
-from transcripts.captions import compile_all_captions
+from transcripts.captions import compile_all_captions, write_to_file
 from transcripts.data_cleaning import (
     remove_punctuation,
     remove_stop_words,
@@ -177,61 +178,103 @@ class DataCleaningTests(TestCase):
         self.assertTrue(check_gibberish(gibberish_list))
 
 
-"""
 class CaptionsTests(TestCase):
-    # Tests the proper accessing of YouTube video Id elements via
-    # the caption API
+    """
+    Tests the proper accessing of YouTube video Id elements via
+    the caption API
+    """
 
-    def setUp(self) -> None:
-        # Executes prior to every test ensuring test output files do not already exist
+    def ensure_files_removed(self, file_path):
+        """
+        Ensures certain files created during testing are completely removed
+        :param file_path: file path representing test output target
+        """
 
-        target_path = os.path.join(os.path.abspath('data'), 'test.txt')
-        if os.path.exists(target_path):
-            os.remove(target_path)
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
-    def tearDown(self) -> None:
-        # Executes after every test ensuring test output files do not still exist
+    def test_write_to_file(self):
+        """
+        Ensures the successful retrieval of YouTube
+        caption data via the corresponding API
+        """
 
-        self.setUp()
+        # Test YouTube video id
+        test_video_id = ['nnPgZOBsRkM']
 
-    def test_get_video_ids(self):
-        # This is the only test that makes a quick YouTube call (DESIGNED FOR CHROME!!!)
-        
-        # Calls the caption API requesting a subset of YouTube video Ids
-        # related to the 'anderson cooper' YouTube search
-        video_ids_set = get_video_ids("anderson cooper", 0, 0, "by cnn")
+        # Returned caption data from above video
+        returned_captions = write_to_file(test_video_id)
 
-        # Ensures the returned unique set of video Ids is not empty
-        self.assertTrue(len(video_ids_set) > 0)
+        # Ensures the returned information is a string
+        self.assertTrue(isinstance(returned_captions, str))
+
+        # Ensures the returned string is larger than 100.
+        # This just serves as an estimate that the string is
+        # most likely caption data and not some other random string.
+        self.assertTrue(len(returned_captions) > 100)
     
     def test_compile_all_captions(self):
-        # Ensures files are properly concatenated when 'compile_all_functions' is called
+        """
+        Ensures the functionality to compile the filtered text file results functions correctly
+        """
 
-        # Represents the root directory of files to concatenate
-        test_root = os.path.abspath("data")
+        # Creates three temporary files within a temporary directory
+        with TemporaryDirectory() as tmp:
 
-        # Represents one of the filters by which to search through files.
-        # Files without 'cnn' in their names will be filtered out.
-        test_news_organization = "cnn"
+            # The below three files represent three test text files
+            temp_file_path_1 = os.path.join(tmp, 'cnn_test_1_captions.txt')
+            temp_file_path_2 = os.path.join(tmp, 'cnn_test_2_captions.txt')
+            temp_file_path_3 = os.path.join(tmp, 'cnn_test_3_captions.txt')
 
-        # 'Manually' computes the total sizes of the intended files
-        total_file_length = sum(
-            [
-                os.path.getsize(os.path.join(test_root, file))
-                for file in os.listdir(test_root)
-                if "captions" in file and test_news_organization in file
-            ]
-        )
+            # The below three strings represent three test text file contents
+            temp_file_1_contents = 'cnn captions data part 1'
+            temp_file_2_contents = 'cnn captions data part 2'
+            temp_file_3_contents = 'cnn captions data part 3'
 
-        # Performs compilation
-        target_path = compile_all_captions(
-            test_root, test_news_organization, testing=True
-        )
+            # Writes temp_file_path_1 contents into file
+            with atomic_write(temp_file_path_1, mode='w') as output_file_1:
+                output_file_1.write(temp_file_1_contents)
 
-        # Ensures compilation file size is correct. This is of course
-        # an estimate of how accurate the function being tested is.
-        self.assertEqual(os.path.getsize(target_path), total_file_length)
-"""
+            # Writes temp_file_path_2 contents into file
+            with atomic_write(temp_file_path_2, mode='w') as output_file_2:
+                output_file_2.write(temp_file_2_contents)
+
+            # Writes temp_file_path_3 contents into file
+            with atomic_write(temp_file_path_3, mode='w') as output_file_3:
+                output_file_3.write(temp_file_3_contents)
+
+            # Represents the directory root where these text files live
+            test_root = tmp
+
+            # Represent the new organization for which to filter text files by
+            test_new_organization = 'cnn'
+
+            # The returned file path that stores the concatenated results of the above test text files
+            target_path = compile_all_captions(test_root, test_new_organization)
+
+            # The combined file size of the three test text files as calculated by summing their lengths
+            total_file_length = sum([len(temp_file_1_contents), len(temp_file_2_contents), len(temp_file_3_contents)])
+
+            # The combined file size of the three test text file after
+            # they have concatenated by the 'compile_all_captions' function
+            target_file_size = os.path.getsize(target_path)
+
+            # Ensures both lengths are equal.
+            # This serves as one estimate of the accuracy of the 'compile_all_captions' function.
+            # One reason I don't check to see if the actual written contents equals the
+            # concatenation of the above three test text files is because for some reason
+            # the 'compile_all_captions' function does not concatenate in the order
+            # the files are written to / searched for within the function itself. I have
+            # manually inspected that it indeed is concatenating them correctly.
+            # Properly automating this type of inspection is another improvement that can be
+            # made to this project.
+            self.assertEqual(total_file_length, target_file_size)
+
+        # Added redundancy on top of using TemporaryDirectory
+        # to ensures the temporary files are indeed removed
+        self.ensure_files_removed(temp_file_path_1)
+        self.ensure_files_removed(temp_file_path_2)
+        self.ensure_files_removed(temp_file_path_3)
 
 
 class WordEmbeddingTests(TestCase):

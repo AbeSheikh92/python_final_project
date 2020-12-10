@@ -5,7 +5,10 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from transcripts.data_cleaning import gen_sample_data, check_gibberish
 
 
-def get_video_ids(query_string, scroll_amount, cycles_to_scroll, uploader):
+# I have refrained from testing this method on travis since it requires access to a
+# chrome web browser and I'm not sure how to integrate that with travis.
+# My own personal tests on my local machine (Mac OS) have passed.
+def get_video_ids(query_string, scroll_amount, cycles_to_scroll, uploader):  # pragma: no cover
     """
     Retrives a subset of video Ids from the loaded YouTube page
     related to the search query
@@ -129,7 +132,7 @@ def write_to_file(video_ids):
     return total_data
 
 
-def compile_all_captions(root_dir, news_organization="cnn", testing=False):
+def compile_all_captions(root_dir, news_organization="cnn"):
     """
     Compiles all of the target text files into a single text file
 
@@ -151,13 +154,7 @@ def compile_all_captions(root_dir, news_organization="cnn", testing=False):
         and news_organization in file
     ]
 
-    # The output file path is altered if this execution is for testing
-    if testing:
-        target_path = os.path.join(os.path.abspath("data"), "test.txt")
-    else:
-        target_path = os.path.join(
-            root_dir, "{0}_ALL_CAPTIONS.txt".format(news_organization)
-        )
+    target_path = os.path.join(root_dir, "{0}_ALL_CAPTIONS.txt".format(news_organization))
 
     # The text files are combined into one and the output file path is returned
     with open(target_path, mode="w+") as output_target:

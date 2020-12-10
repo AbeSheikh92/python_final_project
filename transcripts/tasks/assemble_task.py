@@ -104,7 +104,7 @@ class QueryUltraModel(Task):  # pragma: no cover
         )
 
         # Convert data into a DataFrame
-        similarity_df = pd.DataFrame(similar_words, columns=["word", "vector"])
+        similarity_df = pd.DataFrame(similar_words, columns=["word", "probability"])
 
         # Writes the DataFrame contents to a csv file
         with self.output().open(mode="w") as output_target:
