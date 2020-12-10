@@ -1,6 +1,6 @@
 ## Files to be excluded from code climate test coverage
 exclude_patterns:
-- "tasks/"
+- "**/tasks/"
 - "__init__.py"
 - "__main__.py"
 - "cli.py"
