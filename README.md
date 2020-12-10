@@ -31,6 +31,8 @@
 
 #### VERSION 2
 ##### Libraries Used:
+| Library | Use(s) |
+|-|-|
 | csci_utils (Our very own library): |
 	*Provides access to functionality to preserve file extensions when writing to local targets within luigi tasks*
     *Allows for the of atomic writing to files* |
@@ -51,68 +53,62 @@
 	*Also used in parts of the code to ensure atomic writing to files* |
 
 
-### VERSION 1
-```bash
-def get_video_ids(query_string, scroll_amount, cycles_to_scroll, uploader):
-    ...
-```
-
 ### VERSION 2
-```
+```python
 def get_video_ids(query_string, scroll_amount, cycles_to_scroll, uploader):
     ...
 ```
 
 
-```
+```python
 def write_to_file(video_ids):
     ...
 ```
 
 
-```
+```python
 def gen_sample_data(sample_list):
     ...
 ```
 
 
-```
+```python
 def replace_chars(func, chars_to_remove=("'", ">", "-")):
     ...
 ```
 
 
-```
+```python
 @replace_chars
 def check_gibberish(data_to_check):
     ...
 ```
 
 
-```
+```python
 def is_english(word_to_check):
     ...
 ```
 
-```
+```python
 def remove_punctuation(list_to_filter):
     ...
 ```
 
 
-```
+```python
 def remove_stop_words(list_to_filter):
     ...
 ```
 
 
-```
+```python
 def construct_embedding(captions, cbow=True):
     ...
 ```
 
 
-```
+```python
 def compile_all_captions(root_dir, news_organization="cnn"):
     ...
 ```
