@@ -56,34 +56,99 @@ def get_video_ids(query_string, scroll_amount, cycles_to_scroll, uploader):
 ```
 
 The next set of commands can be briefly summarized as using selenium to control the web browser (which for the scope of this project is currently specified as Chrome). The following are the sequential steps we want to be able to get the Chrome web browser to do:
-1.	Open up an instance of the Chrome web browser
+* Open up an instance of the Chrome web browser
+```python
+    # 'driver' represents the 'controller' / 'manager' of the Chrome web browser
+    driver = webdriver.Chrome()
+    ...
+```
 
-2.	Navigate to the formatted YouTube url
-        - This will point to the search results for the query the user specified
+* Navigate to the formatted YouTube url
+    * This will point to the search results for the query the user specified
+```python
+    ...
 
-3.	Scroll the page downwards
-        - The amount by which to scroll downwards is also specified by the user
-        - This amount is in units of pixels, ex: ``` -s 1000```
-        - We want to scroll the page downwards because this will load more search results, thereby allowing us to retrieve more video captions
+    # The 'controller' accesses the link and scrolls an initial amount
+    driver.get(link)
+    driver.execute_script("window.scrollTo(0, {0});".format(scroll_amount))
 
-4.	Repeat step three a specified number of times
-        - The number of times the downwards scrolling happens is also specified on the command-line, ex: ```-c 5```
-        - Between each scroll, we wait five seconds so that the results have time to fully load
-        - Once we have scrolled downwards (a specified pixel amount) a specified number of times, we need to extract an HTML element containing the video title
-        - We do this for each video that has been loaded
+    # Pauses 5 seconds between each downward scroll in order to allow the page to fully load
+    # and thus better ensure html data will be available for acquisition
+    pause_between_scrolls = 5.0
 
-6.	We extract the ‘href’ attribute of these HTML elements and create a set from them
-        - Another argument that user will specify on the command-line will be an argument abbreviated as ‘-ch’ which represents the YouTube channel for a video. Although it should not break the program, the user should enter either ‘by cnn’ or ‘by fox’ as the value for this argument, ex: ```-ch ‘by cnn’```
-        - This argument is useful because if we want to retrieve videos from CNN commentary about a particular political topic, we need some way to ensure the returned results are indeed from CNN and not another channel. Before we actually extract the ‘href’ element from one of our collected HTML elements, we check the ‘aria-label’ which should contain a string that contains the substring ‘by [channel_name]’.
-        - If the ‘aria-label’ attribute of the HTML element contains, in the case of CNN video results, the string ‘by cnn’, we add it to the final set of video ids.
+    # Lower bound on the scroll amount
+    min_scroll_value = 0
 
-7.	Now we have a set of ‘href’ attributes, the final part of which contains the video ids
-        - We subset this string to only retrieve the relevant video ids component, which looks something like ‘v=DEq5k_UvDB8’. 
-        - Go ahead and check out the YouTube video id provided just above if you like watching Rhett and Link from Good Mythical Morning eat things (their banter is currently serving as the background soundtrack to this writeup)
+    # The scrolling height is initially set to the 'scroll_amount'
+    # which is later used as the scrolling increment amount
+    scroll_height = scroll_amount
+    ...
+```
 
-8.	Finally, this set of video ids is returned to the calling function
-        - I used the set data structure instead of a list because this helps enforce the use of each video only once.
+* Scroll the page downwards
+    * The amount by which to scroll downwards is also specified by the user
+    * This amount is in units of pixels, ex: ``` -s 1000```
+    * We want to scroll the page downwards because this will load more search results, thereby allowing us to retrieve more video captions
+    * Repeat the above step a specified number of times
+        * The number of times the downwards scrolling happens is also specified on the command-line, ex: ```-c 5```
+        * Between each scroll, we wait five seconds so that the results have time to fully load
+        * Once we have scrolled downwards (a specified pixel amount) a specified number of times, we need to extract an HTML element containing the video title
+        * We do this for each video that has been loaded
+```python
+    # Scrolls downwards 'cycles_to_scroll' number of times
+    for i in range(cycles_to_scroll):
 
+        # The 'controller' executes a script to scroll downwards by
+        # the specified amount
+        driver.execute_script(
+            "window.scrollTo({0}, {1});".format(min_scroll_value, scroll_height)
+        )
+
+        # Pauses activity for 5 seconds
+        time.sleep(pause_between_scrolls)
+
+        # Scroll bounds are updated
+        min_scroll_value = scroll_height
+        scroll_height += scroll_amount
+
+    # Retrieves the video title elements
+    user_data = driver.find_elements_by_xpath('//*[@id="video-title"]')
+    ...
+```
+
+* We extract the ‘href’ attribute of these HTML elements and create a set from them
+    * Another argument that user will specify on the command-line will be an argument abbreviated as ‘-ch’ which represents the YouTube channel for a video. Although it should not break the program, the user should enter either ‘by cnn’ or ‘by fox’ as the value for this argument, ex: ```-ch ‘by cnn’```
+    * This argument is useful because if we want to retrieve videos from CNN commentary about a particular political topic, we need some way to ensure the returned results are indeed from CNN and not another channel. Before we actually extract the ‘href’ element from one of our collected HTML elements, we check the ‘aria-label’ which should contain a string that contains the substring ‘by [channel_name]’.
+    * If the ‘aria-label’ attribute of the HTML element contains, in the case of CNN video results, the string ‘by cnn’, we add it to the final set of video ids.
+```python
+    # Set comprehension storing the corresponding full video Ids links if they are
+    # uploaded by the intended YouTube channel as represented by 'uploader'.
+    # The uploader is checked because any given search result page will have
+    # a number of different YouTube channel results even if a specific one
+    # was searched for. This ensures video Ids are only kept if they are
+    # from the target channel.
+    links = {
+        i.get_attribute("href")
+        for i in user_data
+        if uploader in str(i.get_attribute("aria-label")).lower()
+    }
+    ...
+```
+* Now we have a set of ‘href’ attributes, the final part of which contains the video ids
+    * We subset this string to only retrieve the relevant video ids component, which looks something like ‘v=DEq5k_UvDB8’. 
+    * Go ahead and check out the YouTube video id provided just above if you like watching Rhett and Link from Good Mythical Morning eat things (their banter is currently serving as the background soundtrack to this writeup)
+```python
+    # Set comprehension storing the extracted video Id component from above
+    video_id_set = {
+        url_link[(url_link.index("v=") + len("v=")) :] for url_link in links
+    }
+    ...
+```
+* Finally, this set of video ids is returned to the calling function
+    * I used the set data structure instead of a list because this helps enforce the use of each video only once.
+```python
+    return video_id_set
+```
 
 
 
@@ -147,8 +212,9 @@ def compile_all_captions(root_dir, news_organization="cnn"):
 ```
 
 
-##### Advanced Python for Data Science Principles Used in this Project (in no particular order)
+#### Advanced Python for Data Science Principles Used in this Project (in no particular order)
 1. Git work flow via utilization of development branches
+
 2. Semantic versioning
 3. Utilization of CSCI_UTILS library and thus enforcement of atomicity and proper preservation of file extensions
 4. Luigi data pipeline
@@ -162,10 +228,13 @@ def compile_all_captions(root_dir, news_organization="cnn"):
 13. Successful interfacing with third-part API
 
 
-##### Future Improvements
-1.	Make the code browser-agnostic and allow for this to be a specifiable option for the user (this one is probably a couple lines of code changes)
-2.	Generalize the program to be able to compare any user chosen contexts (not just ‘CNN’ and ‘Fox News’)
-3.	Perform certain steps concurrently rather than iteratively
-        - Currently, the program accesses YouTube twice in order to retrieve video captions. Once to retrieve a list of video ids and then once to retrieve the associated captions for the subset of these videos that survived a certain filter
-        - Instead, the program could be refactored to perform the filter at the same as it is obtaining the video ids themselves such that it would also be able to retrieve the captions in this first access of YouTube.
+#### Future Improvements
+1. Make the code browser-agnostic and allow for this to be a specifiable option for the user (this one is probably a couple lines of code changes)
+
+2. Generalize the program to be able to compare any user chosen contexts (not just ‘CNN’ and ‘Fox News’)
+
+3. Perform certain steps concurrently rather than iteratively
+    3. Currently, the program accesses YouTube twice in order to retrieve video captions. Once to retrieve a list of video ids and then once to retrieve the associated captions for the subset of these videos that survived a certain filter
+    3. Instead, the program could be refactored to perform the filter at the same as it is obtaining the video ids themselves such that it would also be able to retrieve the captions in this first access of YouTube.
+    
 4.	Allow the user to choose the hyperparameters for the neural network
