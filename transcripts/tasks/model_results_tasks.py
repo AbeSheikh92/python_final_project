@@ -136,7 +136,7 @@ class AnalyzeModelResults(Task):  # pragma: no cover
         )
 
         # Stores results to DataFrame
-        words_df = pd.DataFrame(most_similar_words, columns=["word", "vector"])
+        words_df = pd.DataFrame(most_similar_words, columns=["word", "probability"])
 
         # Writes results to target file
         with self.output().open(mode="w") as output_target:

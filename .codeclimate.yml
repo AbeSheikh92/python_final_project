@@ -1,0 +1,5 @@
+## Files to be excluded from code climate test coverage
+exclude_patterns:
+- "tasks/"
+- "__init__.py"
+- "__main__.py"
