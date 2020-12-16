@@ -23,7 +23,7 @@ def get_video_ids(query_string, scroll_amount, cycles_to_scroll, uploader):  # p
     # Formats the YouTube url to include the query
     # and filter for video with captions enabled
     # (which does NOT gaurantee captions are actually enabled)
-    formatted_query = str(query_string).replace(" ", "+")
+    formatted_query = query_string.replace(" ", "+")
     link = (
         "https://www.youtube.com/results?search_query={0}&sp=EgIoAQ%253D%253D".format(
             formatted_query
@@ -76,7 +76,7 @@ def get_video_ids(query_string, scroll_amount, cycles_to_scroll, uploader):  # p
     links = {
         i.get_attribute("href")
         for i in user_data
-        if uploader in str(i.get_attribute("aria-label")).lower()
+        if 'by ' + str(uploader) in str(i.get_attribute("aria-label")).lower()
     }
 
     # Set comprehension storing the extracted video Id component from above

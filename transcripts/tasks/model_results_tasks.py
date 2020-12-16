@@ -20,9 +20,6 @@ class FeedToModel(Task):  # pragma: no cover
     # Parameter representing the local file root
     MODEL_ROOT = Parameter(default=os.path.abspath(os.path.join("data", "models")))
 
-    # Parameter representing the captions target file
-    video_captions_target_file = Parameter(default="cnn_captions.txt")
-
     # Parameter representing the target file to save the model to
     trained_model_target_file = Parameter(default="trained_embedding.model")
 
@@ -34,28 +31,16 @@ class FeedToModel(Task):  # pragma: no cover
         # Returns the output target file path. The path incorporates
         # the captions target file path for a partial salting.
 
-        """
+        # Represents the file path to store the video captions
+        video_ids_path = str(self.channel_author) + '_' + str(self.query) + '_captions'
+
         paths_list = [
             str(self.MODEL_ROOT),
-            os.path.splitext(str(self.video_captions_target_file))[0],
+            video_ids_path,
             str(self.trained_model_target_file),
         ]
 
         return SuffixPreservingLocalTarget(reduce(os.path.join, paths_list))
-        """
-
-        return SuffixPreservingLocalTarget(
-            os.path.join(
-                (
-                    os.path.join(
-                        "%s" % self.MODEL_ROOT,
-                        "%s"
-                        % os.path.splitext(str(self.video_captions_target_file))[0],
-                    )
-                ),
-                "%s" % self.trained_model_target_file,
-            )
-        )
 
     def run(self):
 
@@ -85,9 +70,6 @@ class AnalyzeModelResults(Task):  # pragma: no cover
     # Parameter representing the local data root
     RESULTS_ROOT = Parameter(default=os.path.abspath(os.path.join("data", "models")))
 
-    # Parameter representing the captions target file
-    video_captions_target_file = Parameter(default="cnn_captions.txt")
-
     # Parameter representing the model results target file
     model_results_target_file = Parameter(default="model_results.csv")
 
@@ -100,32 +82,18 @@ class AnalyzeModelResults(Task):  # pragma: no cover
 
     def output(self):
 
-        """
+        # Represents the file path to store the video captions
+        video_ids_path = str(self.channel_author) + '_' + str(self.query) + '_captions'
+
         paths_list = [
             str(self.RESULTS_ROOT),
-            os.path.splitext(str(self.video_captions_target_file))[0],
+            video_ids_path,
             str(self.model_results_target_file),
         ]
 
-        return SuffixPreservingLocalTarget(reduce(os.path.join(paths_list)))
-        """
-
-        # Returns the target file path for the model results
-        return SuffixPreservingLocalTarget(
-            os.path.join(
-                (
-                    os.path.join(
-                        "%s" % self.RESULTS_ROOT,
-                        "%s"
-                        % os.path.splitext(str(self.video_captions_target_file))[0],
-                    )
-                ),
-                "%s" % self.model_results_target_file,
-            )
-        )
+        return SuffixPreservingLocalTarget(reduce(os.path.join, paths_list))
 
     def run(self):
-
         # Loads the saved model
         with self.input().open(mode="r") as input_target:
             loaded_model = Word2Vec.load(input_target.name)
