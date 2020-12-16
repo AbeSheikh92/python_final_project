@@ -18,7 +18,7 @@ It is this difference in word associations that ultimately construct mostly non-
 
 #### A Brief Introduction to Borrowed Code
 ##### Libraries Used:
-| Library | Use(s) |
+| Library | Use in This Project |
 |-|-|
 | csci_utils (Our very own library): |*Provides access to functionality to preserve file extensions when writing to local targets within luigi tasks and for the of atomically writing to files* |
 | nltk (Natural Language Toolkit): | *Provides functionality to preprocess text data (ex: checking if a word is English)* |
@@ -87,10 +87,12 @@ The next set of commands can be briefly summarized as using selenium to control 
 
 * Scroll the page downwards
     * The amount by which to scroll downwards is also specified by the user
-    * This amount is in units of pixels, ex: ``` -s 1000```
+    * This amount is in units of pixels
+        * Ex: ``` -s 1000```
     * We want to scroll the page downwards because this will load more search results, thereby allowing us to retrieve more video captions
     * Repeat the above step a specified number of times
-        * The number of times the downwards scrolling happens is also specified on the command-line, ex: ```-c 5```
+        * The number of times the downwards scrolling happens is also specified on the command-line
+            * Ex: ```-c 5```
         * Between each scroll, we wait five seconds so that the results have time to fully load
         * Once we have scrolled downwards (a specified pixel amount) a specified number of times, we need to extract an HTML element containing the video title
         * We do this for each video that has been loaded
