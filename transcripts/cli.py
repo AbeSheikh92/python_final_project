@@ -1,5 +1,6 @@
 import argparse
 from luigi import build
+from .tasks.caption_tasks import ProcessCaptionData
 from .tasks.model_results_tasks import AnalyzeModelResults
 from .tasks.assemble_task import QueryUltraModel
 
@@ -10,28 +11,12 @@ parser = argparse.ArgumentParser(description="Arguments for Embedding Applicatio
 # Parameters for the tasks in caption_tasks.py and model_results_tasks.py
 # -q represents the query to search for on YouTube
 parser.add_argument(
-    "-q", "--query", default="cnn immigration", help="Youtube Search Query"
+    "-q", "--query", default="immigration", help="Youtube Search Query"
 )
 
 # -ch represents the intended YouTube channel whose content is of interest
 parser.add_argument(
-    "-ch", "--channel", default="by cnn", help="Name of Youtube Channel"
-)
-
-# -f represents the output target file path for the video Ids
-parser.add_argument(
-    "-f",
-    "--file",
-    default="cnn_video_ids.txt",
-    help="Name of File to Write Video Ids to",
-)
-
-# -t represents the output target file path for the video captions
-parser.add_argument(
-    "-t",
-    "--target",
-    default="cnn_captions.txt",
-    help="Name of File to Write Captions to",
+    "-ch", "--channel", default="cnn", help="Name of Youtube Channel"
 )
 
 # -s represents the number of pixels to scroll downwards on the loaded YouTube page
@@ -92,15 +77,11 @@ def main(args=None):
     build(
         [
             AnalyzeModelResults(
-                video_ids_target_file=args.file,
-                video_captions_target_file=args.target,
                 query=args.query,
                 scroll_volume=int(args.scroll),
                 num_cycles=int(args.cycles),
                 channel_author=args.channel,
-                trained_model_target_file=args.model_file,
-                model_results_target_file=args.model_results,
-                search_term=args.search_query,
+                search_term=args.search_query
             )
         ],
         local_scheduler=True,

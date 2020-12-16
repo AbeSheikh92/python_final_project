@@ -14,11 +14,8 @@ class GetYoutubeVideoIds(ExternalTask):  # pragma: no cover
     # Parameter representing the local directory root
     LOCAL_ROOT = Parameter(default=os.path.abspath("data"))
 
-    # Parameter representing the file path to stop the video Ids
-    video_ids_target_file = Parameter(default="cnn_video_ids.txt")
-
     # Parameter representing the YouTube search query
-    query = Parameter(default="cnn immigration")
+    query = Parameter(default="immigration")
 
     # Parameter representing the number of pixels to
     # scroll the loaded YouTube page downwards
@@ -30,20 +27,24 @@ class GetYoutubeVideoIds(ExternalTask):  # pragma: no cover
     num_cycles = IntParameter(default=0)
 
     # Parameter representing the YouTube channel uploaded
-    channel_author = Parameter(default="by cnn")
+    channel_author = Parameter(default="cnn")
 
     def output(self):
+        # Represents the file path to store the video Ids
+        video_ids_path = str(self.channel_author) + '_' + str(self.query) + '_ids.txt'
 
         # Returns the target file path for the video Ids
         return SuffixPreservingLocalTarget(
-            os.path.join("%s" % self.LOCAL_ROOT, "%s" % self.video_ids_target_file)
+            os.path.join("%s" % self.LOCAL_ROOT, video_ids_path)
         )
 
     def run(self):
-
         # Retrieves video Ids and writes them to the target file path
         video_list = get_video_ids(
-            self.query, self.scroll_volume, self.num_cycles, self.channel_author
+            str(self.channel_author) + " " + str(self.query),
+            self.scroll_volume,
+            self.num_cycles,
+            self.channel_author
         )
 
         with self.output().open(mode="w") as output_target:
@@ -70,20 +71,15 @@ class ProcessCaptionData(Task):  # pragma: no cover
     # Parameter representing the local directory root
     CAPTIONS_ROOT = Parameter(default=os.path.abspath("data"))
 
-    # Parameter representing the target file path for the caption data
-    video_captions_target_file = Parameter(default="cnn_captions.txt")
-
     def requires(self):
         return self.clone(GetYoutubeVideoIds)
 
     def output(self):
+        # Represents the file path to store the video captions
+        video_ids_path = str(self.channel_author) + '_' + str(self.query) + '_captions.txt'
 
         # Returns the target file path for the video Ids
-        return SuffixPreservingLocalTarget(
-            os.path.join(
-                "%s" % self.CAPTIONS_ROOT, "%s" % self.video_captions_target_file
-            )
-        )
+        return SuffixPreservingLocalTarget(os.path.join("%s" % self.CAPTIONS_ROOT, video_ids_path))
 
     def run(self):
 
