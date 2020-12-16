@@ -34,7 +34,7 @@ So, with the goal of accomplishing the above, our journey begins with the most f
 Roughly following the instructions provided by this source: https://www.analyticsvidhya.com/blog/2019/05/scraping-classifying-youtube-video-data-python-selenium/, I managed to produce the ‘get_video_ids’ function in  the ‘transcripts/captions.py.’
 The first part of this function formats a YouTube url that includes the formatted version of the YouTube query that is one of the command-line arguments the user would enter on the command line. 
 
-Throughout the course of this document, I will expand on the full command-line argument specifications the user will enter. We will build up to the full list of arguments one at a time. The first one just mentioned is the actual query that will be entered into the YouTube search bar:
+Throughout the course of this document, I will expand on the full command-line argument specifications the user will enter. We will build up to the full list of arguments one at a time. The first one just mentioned represents the actual query that will be entered into the YouTube search bar:
 
 Ex:
 ```bash
@@ -152,13 +152,195 @@ The next set of commands can be briefly summarized as using selenium to control 
     return video_id_set
 ```
 
-
+At this point, we now have set of YouTube video ids from which subsequent code will extract captions from. The function designed
+to do this is the 'write_to_file' function. Essentially, this function is sent a list of video ids and cycles through them,
+retrieving each video's corresponding captions. 
 
 ```python
-def get_video_ids(query_string, scroll_amount, cycles_to_scroll, uploader):
-    ...
+def write_to_file(video_ids):
+
+    total_data = ""
+    for video in video_ids:
+        try:
+
+            # Retrieves the captions corresponding to the video Ids and
+            # specifies the english translation
+            captions_list = YouTubeTranscriptApi.get_transcript(video, languages=["en"])
+            ...
+            ...
+            ...
+
+            # Accumulates the text
+            data = " ".join(list(map(lambda x: "".join(x["text"]), captions_list)))
+            total_data += " " + data
+        except:
+            ...
+
+    return total_data
 ```
 
+However, once the captions for a video are retrieved, via the line reading,
+
+```python
+captions_list = YouTubeTranscriptApi.get_transcript(video, languages=["en"])
+```
+
+they need to be preprocessed. The specific need for them to have this preprocessing is evident due to certain peculiarities 
+that sometimes express themselves. Basically, sometimes the captions are returned as either non-English or gibberish. Even though
+the call to the YouTube API specifies the English captions, they are not always returned as such. Also, sometimes the captions
+seem to be poorly generated, and thus most of the words are gibberish. For this reason, before a particular video's captions
+are added to the text that will be used to train an instance of a Word2Vec model, the video's captions must be checked to ensure
+its contents will be useful to the model and not dilutive. 
+
+We will go over the four star functions that will help us in this process. They are:
+* gen_sample_data
+* check_gibberish
+* replace_chars
+* is_english
+
+It will surely be more time-consuming to check each and every word of a video's returns captions list, and so perhaps choosing
+a sample of words from each video's captions would serve to identify which video should not be used while also minimizing the
+computational and time complexity required to do this.
+
+Selecting 10 consecutive words from each video's captions should do well for this task. And below we can see the 'gen_sample_data'
+function doing exactly that:
+
+```python
+def gen_sample_data(sample_list):
+
+    sample_data = [sample_list[i]["text"] for i in range(len(sample_list)) if i < 10]
+    return sample_data
+```
+
+Once 'gen_sample_data' has selected 10 words from a given video's captions, these words are then passed to the 'check_gibberish'
+function. 
+
+The 'check_gibberish' function essentially receives a tokenized list of strings and passes each element (each of which is a word) of this list to the 
+'is_english' function (after selectively filtering for which words would be best to send). The nltk corpus library can sometimes
+have issues identifying words that end with an 's' when the 's' indicates plurality. For this reason, 'check_gibberish' filters
+out these words. But before 'check_gibberish' does any of this, the incoming tokenized list of strings is preprocessed first.
+
+Enter, 'replace_chars'. The 'replace_chars' function decorates 'check_gibberish'. It is within this wrapper that certain 
+characters are filtered from the data that 'gen_sample_data' is sending 'check_gibberish'. The reason this filtering is necessary,
+is that some of 'gen_sample_data''s 10 selected words may have (due to caption data peculiarities) certain characters in them
+that would confuse the nltk corpus library. Some examples may look like:
+* '>>>phone' (needs to be 'phone')
+* 'exit.' (needs to be 'exit')
+* 'won't' (needs to be 'wont')
+
+After these characters are removed from the words 'gen_sample_data' is sending to 'check_gibberish' (which are being intercepted
+by this decorator), they are re-tokenized because in the character removal process the list of strings was transformed into 
+a single string. For this reason, before this data is allowed to pass to 'check_gibberish', it needs to be transformed back into 
+a list of strings where each element is a single word. 
+
+```python
+def replace_chars(func, chars_to_remove=("'", ">", "-")):
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+
+        # Removes the specified characters from each element of the list
+        new_args = list(
+            map(
+                lambda x: "".join([char for char in x if char not in chars_to_remove]),
+                args[0],
+            )
+        )
+
+        # Reassembles the data into a list with each element as a single word
+        new_args = word_tokenize(" ".join(new_args))
+        return func(new_args, **kwargs)
+
+    return wrapper
+
+```
+
+Once 'replace_chars' has preprocessed the data, the decorator lets the data pass, in its new form, to 'check_gibberish'.
+As mentioned above, 'check_gibberish' filters out some words (if need be) and sends them, one at a time, to the fourth function, 
+'is_english'. 
+
+```python
+@replace_chars
+def check_gibberish(data_to_check):
+
+    check_list = [
+        is_english(word.lower()) * 1
+        for word in data_to_check
+        if len(word) > 1 and word[-1] != "s"
+    ]
+
+    # try different values for the threshold
+    return sum(check_list) / float(len(check_list)) < 0.80
+```
+
+The 'is_english' function simply asks the nltk.corpus.words package if each word that is sent to it is indeed an English word. 
+It either returns True or False.
+
+```python
+def is_english(word_to_check):
+
+    if word_to_check in words.words():
+        return True
+    else:
+        return False
+```
+
+One final function the 'check_gibberish' function performs, is calculating what fraction of the words (for this single 10-word sample
+for one video's captions) were indicated to be English out of all the words it sent to 'is_english'. If this fraction is at least
+80%, check_gibberish returns True to its calling function, and False otherwise. The reason check_gibberish does not ensure 
+that 100% of the words must be identified to be English is for a couple reasons:
+* the nltk.corpus.words package will not always correctly identify English words as English
+* other erroneous processes/details may cause some English words to be misidentified as non-English
+
+For these reasons, a 20% gap is allocated for just these sort of errors. Recall, that the 'write_to_file' function is cycling 
+through each video id sent to it, and doing the following:
+* retrieving its YouTube caption data
+* creating a 10-word sample of data from these captions
+* checking if at least 80% of these captions are usable
+    * if so, add these captions to a string (that is to be concatenated with subsequent video captions)
+    * if not, ignore the video's captions
+    
+This is illustrated with the full 'write_to_file' function depicted below:
+```python
+def write_to_file(video_ids):
+
+    total_data = ""
+    for video in video_ids:
+        try:
+
+            # Retrieves the captions corresponding to the video Ids and
+            # specifies the english translation
+            captions_list = YouTubeTranscriptApi.get_transcript(video, languages=["en"])
+
+            # Tests a sample of the caption data to ensure it is quality data
+            sample_data = gen_sample_data(captions_list)
+            gibberish = check_gibberish(sample_data)
+
+            # If the sample data from the YouTube captions
+            # did not pass the gibberish test, the video is skipped
+            if gibberish:
+                continue
+
+            # Accumulates the text
+            data = " ".join(list(map(lambda x: "".join(x["text"]), captions_list)))
+            total_data += " " + data
+
+        # Some common error types are specifically allowed to be displayed
+        except (
+            TypeError,
+            ValueError,
+            AttributeError,
+            FileExistsError,
+            FileNotFoundError,
+        ) as e:
+            print(e)
+        except:
+            print("Video {0} Does Not Have Captions Enabled".format(video))
+
+    return total_data
+
+```
+ 
 
 ```python
 def write_to_file(video_ids):
