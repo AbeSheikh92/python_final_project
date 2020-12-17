@@ -1,7 +1,6 @@
 import argparse
 from distutils.util import strtobool
 from luigi import build
-from .tasks.caption_tasks import ProcessCaptionData
 from .tasks.model_results_tasks import AnalyzeModelResults
 from .tasks.assemble_task import QueryUltraModel
 

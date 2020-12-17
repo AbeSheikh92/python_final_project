@@ -35,6 +35,21 @@ If the below does not work, I have failed, and you should pause in a moment of s
 The code can still be run fine, but perhaps pre-trained models will not be available (unless I maybe include them with my
 submission along with the link to this repo).
 
+If I have managed the models with my submission, they will be in a zip file. Here's what to do with them:
+* Unzip them
+* Once you have cloned this repo locally, place one trained model under the following path:
+    * data/models/ALL_CAPTIONS_CNN/
+    
+* Place the other under:
+    * data/models/ALL_CAPTIONS_FOX/
+    
+Now they should be usable. If you run ```python3 -m transcripts -u True -ch 'fox' -sq 'biden'``` and one of the terms
+in the response is 'sleepy', that is probably the model that belongs under the ALL_CAPTIONS_FOX directory.
+
+Below I continue with how to access the same trained models that are already in my S3 public bucket. Try the below steps first,
+and then if they don't work there will be a zipfile that you can try with the above steps. Neither of these methods are necessary
+to run my code, they are just a fast track to producing results without reading the whole README.md.
+    
 Because the following detailed explanation is quite lengthy, this section will briefly explain how to quickly execute part 
 of the project's functionality in order to prove that is does indeed do something besides exist. Once you have cloned the repo
 locally, you can run the makefile provided in order to retrieve some pre-trained Word2Vec models. 
@@ -764,9 +779,9 @@ You will use the '-u' command-line argument which will be a boolean True/False:
     
 I wanted to refrain from mentioning the -u command-line argument's purpose until now when what it determines should make more sense.
 One more thing to note is:
-1 if you have ran this project with -u set to True at least once
-2 then run the project with -u set to False (without deleting the files at __CreateAccumulatedModel__'s output path)
-3 then run the project with -u set to True again
+* if you have ran this project with -u set to True at least once
+* then run the project with -u set to False (without deleting the files at __CreateAccumulatedModel__'s output path)
+* then run the project with -u set to True again
 
 Then, whatever new caption text files were added to the list of text files in the __data__ directory from step 2 above 
 will not be added to the compiled text file that was created in step 1 above was you run step 3 above. This is because
@@ -958,7 +973,6 @@ nearly 6,000 code-infused words and still retain their sanity.
 
 #### Advanced Python for Data Science Principles Used in this Project (in no particular order)
 1. Git work flow via utilization of development branches
-
 2. Semantic versioning
 3. Utilization of CSCI_UTILS library and thus enforcement of atomicity and proper preservation of file extensions
 4. Luigi data pipeline
