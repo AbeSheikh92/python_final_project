@@ -29,6 +29,12 @@ It is this difference in word associations that ultimately construct mostly non-
 
 
 #### Quick Start
+
+I have done my best to make the S3 AWS Bucket public such that the below description will allow you to access its contents.
+If the below does not work, I have failed, and you should pause in a moment of silence for in condolence of this failure.
+The code can still be run fine, but perhaps pre-trained models will not be available (unless I maybe include them with my
+submission along with the link to this repo).
+
 Because the following detailed explanation is quite lengthy, this section will briefly explain how to quickly execute part 
 of the project's functionality in order to prove that is does indeed do something besides exist. Once you have cloned the repo
 locally, you can run the makefile provided in order to retrieve some pre-trained Word2Vec models. 
@@ -38,12 +44,12 @@ This should be doable on the command-line within the local project directory via
 
 Once you've downloaded the models, one of which is trained on YouTube video caption data from CNN and one of which is trained
 on YouTube caption data from Fox News, you can run the following on the command-line:
-* ```python3 -m transcripts -n 'fox' -sq 'biden'```
-* ```python3 -m transcripts -n 'fox' -sq 'trump'```
-* ```python3 -m transcripts -n 'fox' -sq 'obama'```
-* ```python3 -m transcripts -n 'cnn' -sq 'biden'```
-* ```python3 -m transcripts -n 'cnn' -sq 'trump'```
-* ```python3 -m transcripts -n 'cnn' -sq 'obama'```
+* ```python3 -m transcripts -u True -n 'fox' -sq 'biden'```
+* ```python3 -m transcripts -u True -n 'fox' -sq 'trump'```
+* ```python3 -m transcripts -u True -n 'fox' -sq 'obama'```
+* ```python3 -m transcripts -u True -n 'cnn' -sq 'biden'```
+* ```python3 -m transcripts -u True -n 'cnn' -sq 'trump'```
+* ```python3 -m transcripts -u True -n 'cnn' -sq 'obama'```
     
 At this point, under the:
 * data/models/ALL_CAPTIONS_CNN/queries
@@ -60,7 +66,7 @@ searches for politically controversial topics (guns, immigration, etc.).
 * This caption text data was preprocessed and then fed to a Word2Vec model which creates word embeddings.
 * This trained model is one of the trained models you just downloaded.
 * The other trained model was identically created but with Fox News YouTube video caption data.
-* When you type ```python3 -m transcripts -n 'fox' -sq 'biden'```, this will execute the following python code:
+* When you type ```python3 -m transcripts -u True -n 'fox' -sq 'biden'```, this will execute the following python code:
     * ```python some_trained_model.most_similar('biden')```
     * The __most_similar__ method will ask the trained model which words it has determined are most likely to appear within 
     the context of the input term, which in this case, is 'biden'.
@@ -475,9 +481,11 @@ def remove_stop_words(list_to_filter):
 
 At this point, we have gone over the heart of the code which makes our goal, achievable. Also, just to recap, the command-line 
 usage of this program so far is achievable with an examples like the below:
-* ```python3 -m transcripts -ch 'cnn' -q 'immigration' -s 20000 -c 5```
-* ```python3 -m transcripts -ch 'fox' -q 'obama -s 15000```
-* ```python3 -m transcripts -ch 'cnn' -q 'russia```
+* ```python3 -m transcripts -u False -ch 'cnn' -q 'immigration' -s 20000 -c 5```
+* ```python3 -m transcripts -u False -ch 'fox' -q 'obama -s 15000```
+* ```python3 -m transcripts -u False -ch 'cnn' -q 'russia```
+
+Ignore the '-u' for now. 
 
 Things to note:
 * The ```python3 -m transcripts``` executes __main.py__ from within the transcripts folder as a module.
@@ -527,7 +535,7 @@ class GetYoutubeVideoIds(ExternalTask):  # pragma: no cover
 
 This major undertaking of this task is in the __run__ method, which calls the __get_video_ids__ function discussed earlier,
 and writes the returned video ids to a file whose name is constructed as such: [channel_author]_[query]_ids.txt'.
-* For example, if the command-line arguments are: ```python3 -m transcripts -ch 'cnn' -q 'immigration'```, then the filename
+* For example, if the command-line arguments are: ```python3 -m transcripts -u False -ch 'cnn' -q 'immigration'```, then the filename
 would be cnn_immigration_ids.txt.
 ```python
     def output(self):
@@ -559,7 +567,7 @@ Secondly, we have the __ProcessCaptionData__ task. This task basically does the 
 * Open the file where the video ids are saved
 * Send a list of these ids to the __write_to_file__ function
 * Write the returned concatenated string to a file whose name is constructed as follows: : [channel_author]_[query]_captions.txt.
-* For example, if the command-line arguments are: ```python3 -m transcripts -ch 'cnn' -q 'immigration'```, then the filename
+* For example, if the command-line arguments are: ```python3 -m transcripts -u False -ch 'cnn' -q 'immigration'```, then the filename
 would be cnn_immigration_captions.txt.
 
 ```python
@@ -658,7 +666,7 @@ lowest) to appear in the context of the word with which it has been queried
 * Print the results of the model to screen
 
 At this point, the full command-line specifications (including the less important '-s' and '-c' ones) are:
-* Ex: ```python3 -m transcripts -ch 'cnn' -q 'immigration' -sq 'foreigners'```
+* Ex: ```python3 -m transcripts -u False -ch 'cnn' -q 'immigration' -sq 'foreigners'```
 
 
 ```python
@@ -734,9 +742,27 @@ Things to note:
 is the case that these will only produce any output if the four previous tasks have been used to produce at least one captions text
 file for the news organization for which you will be executing the __CreateAccumulatedModel__ task.
 * Let's assume the four previous tasks have been run and have produced a number of caption text files for Fox News. If you
-now execute: ```python3 -m transcripts -n 'cnn'```, the next task to be discussed (__CreateAccumulatedModel__), will go into the __data__ directory,
+now execute: ```python3 -m transcripts -u True -n 'cnn'```, the next task to be discussed (__CreateAccumulatedModel__), will go into the __data__ directory,
 compile all the files which contain 'cnn' and 'captions' in their filename into one large file by the name of 'cnn_ALL_CAPTIONS.txt'
 within the same __data__ directory.  
+
+In order to distinguish which set of tasks you would like to run, either the first four:
+* GetYouTubeVideos
+* ProcessCaptionData
+* FeedToModel
+* AnalyzeModelResults
+
+or the second two:
+* CreateAccumulatedModel
+* QueryUltraModel
+
+You will use the '-u' command-line argument which will be a boolean True/False:
+* ```python3 -m transcripts -u True -ch 'cnn' -sq 'biden'```
+    * This means you will be using the second set of tasks
+* ```python3 -m transcripts -u False -ch 'cnn' -q 'biden' -sq 'biden'```
+    * This means you will be using the first set of tasks (notice the '-q' is used here as it is necesary for the first set of tasks).
+    
+I wanted to refrain from mentioning the -u command-line argument's purpose until now when what it determines should make more sense.
 
 Continuing the discussion, we now look to the __transcripts/tasks/assemble_tasks.py__ file, in which we find the __CreateAccumulatedModel__
 task. This task does the following:
@@ -836,7 +862,7 @@ the following:
 * Query the model using the __most_similar__ method and an input term
 * Write the returned list of words to an output file whose full path is constructed as such:
     * data/models/ALL_CAPTIONS_[news_organization]/queries/[model_input_term]_model_results.csv
-    * For example, if we executed: ```python3 -m transcripts -ch 'cnn' -sq 'biden'```, this would produce the following path:
+    * For example, if we executed: ```python3 -m transcripts -u True -ch 'cnn' -sq 'biden'```, this would produce the following path:
     data/models/ALL_CAPTIONS_CNN/queries/biden_model_results.csv
     
 Things to note:
@@ -846,12 +872,12 @@ This is not really something to note since luigi is designed exactly to do this,
 each execution of __QueryUltraModel__, it certainly is NOT the case the the ULTRA model is having to be trained again and again, inefficiently.
 * By having the single-term query be part of the actual filename, we achieve a sort of salting this way, ensuring that if
 the same query is run on a pre-trained model, no tasks will be executed.
-    * For example, running: ```python3 -m transcripts -ch 'cnn' -sq 'biden'``` will only execute the first time. However, since
+    * For example, running: ```python3 -m transcripts -u True -ch 'cnn' -sq 'biden'``` will only execute the first time. However, since
     the '-sq' argument salts the output file name for this task, we CAN run any number of similar calls with different values
     for this argument which will create new output file entries under the data/models/ALL_CAPTIONS_CNN/queries directory. 
         * For example, if we run:
-            * ```python3 -m transcripts -ch 'cnn' -sq 'trump```
-            * ```python3 -m transcripts -ch 'cnn' -sq 'guns'```
+            * ```python3 -m transcripts -u True -ch 'cnn' -sq 'trump```
+            * ```python3 -m transcripts -u True -ch 'cnn' -sq 'guns'```
         this produces the following full file paths:
             * data/models/ALL_CAPTIONS_CNN/queries/trump_model_results.csv
             * data/models/ALL_CAPTIONS_CNN/queries/guns_model_results.csv

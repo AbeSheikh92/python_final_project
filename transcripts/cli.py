@@ -1,4 +1,5 @@
 import argparse
+from distutils.util import strtobool
 from luigi import build
 from .tasks.caption_tasks import ProcessCaptionData
 from .tasks.model_results_tasks import AnalyzeModelResults
@@ -8,16 +9,24 @@ from .tasks.assemble_task import QueryUltraModel
 # Command line arguments specifying certain parameters for the tasks
 parser = argparse.ArgumentParser(description="Arguments for Embedding Application")
 
-# Parameters for the tasks in caption_tasks.py and model_results_tasks.py
-# -q represents the query to search for on YouTube
 parser.add_argument(
-    "-q", "--query", default="immigration", help="Youtube Search Query"
+    "-u",
+    "--ultra",
+    default='False',
+    help="Answers the question: 'Will you be entering commands to query the ultra model"
+    "which is trained from the compilation of a small corpus of already created"
+    "text files? If 'False', then you will be entering commands to create an individual"
+    "video id text file and video caption text file and will be query a less ultra "
+    "model that is trained off of only the caption data associated with this single "
+    "caption text file.",
 )
 
+# Parameters for the tasks in caption_tasks.py and model_results_tasks.py
+# -q represents the query to search for on YouTube
+parser.add_argument("-q", "--query", default="immigration", help="Youtube Search Query")
+
 # -ch represents the intended YouTube channel whose content is of interest
-parser.add_argument(
-    "-ch", "--channel", default="cnn", help="Name of Youtube Channel"
-)
+parser.add_argument("-ch", "--channel", default="cnn", help="Name of Youtube Channel")
 
 # -s represents the number of pixels to scroll downwards on the loaded YouTube page
 # in order to load more content
@@ -72,27 +81,28 @@ little downloaded captions
 
 def main(args=None):
     args = parser.parse_args(args=args)
+    ultra_task = bool(strtobool(args.ultra))
 
-    """
-    build(
-        [
-            AnalyzeModelResults(
-                query=args.query,
-                scroll_volume=int(args.scroll),
-                num_cycles=int(args.cycles),
-                channel_author=args.channel,
-                search_term=args.search_query
-            )
-        ],
-        local_scheduler=True,
-    )
-    """
+    if not ultra_task:
+        build(
+            [
+                AnalyzeModelResults(
+                    query=args.query,
+                    scroll_volume=int(args.scroll),
+                    num_cycles=int(args.cycles),
+                    channel_author=args.channel,
+                    search_term=args.search_query
+                )
+            ],
+            local_scheduler=True,
+        )
 
-    build(
-        [
-            QueryUltraModel(
-                news_organization=args.news, term_of_interest=args.search_query
-            )
-        ],
-        local_scheduler=True,
-    )
+    else:
+        build(
+            [
+                QueryUltraModel(
+                    news_organization=args.news, term_of_interest=args.search_query
+                )
+            ],
+            local_scheduler=True,
+        )
