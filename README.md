@@ -763,6 +763,19 @@ You will use the '-u' command-line argument which will be a boolean True/False:
     * This means you will be using the first set of tasks (notice the '-q' is used here as it is necesary for the first set of tasks).
     
 I wanted to refrain from mentioning the -u command-line argument's purpose until now when what it determines should make more sense.
+One more thing to note is:
+1 if you have ran this project with -u set to True at least once
+2 then run the project with -u set to False (without deleting the files at __CreateAccumulatedModel__'s output path)
+3 then run the project with -u set to True again
+
+Then, whatever new caption text files were added to the list of text files in the __data__ directory from step 2 above 
+will not be added to the compiled text file that was created in step 1 above was you run step 3 above. This is because
+the __CreateAccumulatedModel__ task (one of two) invoked by step 3 which is responsible for producing this compiled text file will detect its task output path
+already exists and such that task will be skipped and only the __QueryUltraModel__ task will be executed. The way around this
+is to delete the files at the __CreateAccumulatedModel__ task's output path and then start from step two above.  
+
+Automating this deletion or incorporating salting to avoid this is one of the improvements that can be made to this project
+upon future expansion.
 
 Continuing the discussion, we now look to the __transcripts/tasks/assemble_tasks.py__ file, in which we find the __CreateAccumulatedModel__
 task. This task does the following:
