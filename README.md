@@ -37,7 +37,8 @@ submission along with the link to this repo).
 
 If I have managed the models with my submission, they will be in a zip file. Here's what to do with them:
 * Unzip them
-* Once you have cloned this repo locally, place one trained model under the following path:
+* One is named cnn_trained_embedding.model and one is named fox_trained_embedding.model
+* Once you have cloned this repo locally, rename them both to trained_embedding.model and place one trained model under the following path:
     * data/models/ALL_CAPTIONS_CNN/
     
 * Place the other under:
