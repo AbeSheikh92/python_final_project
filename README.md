@@ -28,6 +28,49 @@ It is this difference in word associations that ultimately construct mostly non-
 | atomicwrites: | *Also used in parts of the code to ensure atomic writing to files* |
 
 
+#### Quick Start
+Because the following detailed explanation is quite lengthy, this section will briefly explain how to quickly execute part 
+of the project's functionality in order to prove that is does indeed do something besides exist. Once you have cloned the repo
+locally, you can run the makefile provided in order to retrieve some pre-trained Word2Vec models. 
+
+This should be doable on the command-line within the local project directory via:
+* ```python3 make data```.
+Once you've downloaded the models, one of which is trained on YouTube video caption data from CNN and one of which is trained
+on YouTube caption data from Fox News, you can run the following on the command-line:
+* ```python3 -m transcripts -n 'fox' -sq 'biden'```
+* ```python3 -m transcripts -n 'fox' -sq 'trump'```
+* ```python3 -m transcripts -n 'fox' -sq 'obama'```
+* ```python3 -m transcripts -n 'cnn' -sq 'biden'```
+* ```python3 -m transcripts -n 'cnn' -sq 'trump'```
+* ```python3 -m transcripts -n 'cnn' -sq 'obama'```
+    
+At this point, under the:
+* data/models/ALL_CAPTIONS_CNN/queries
+* data/models/ALL_CAPTIONS_FOX/queries
+
+directories each, you should find csv files entitled:
+* biden_model_results.csv
+* trump_model_results.csv
+* obama_model_results.csv
+
+Go ahead and compare the corresponding results from both models. The following is my attempt to tl;dr what the results mean:
+* A good bit of YouTube video caption data was retrieved from a variety of CNN videos that were returned given a variety of 
+searches for politically controversial topics (guns, immigration, etc.).
+* This caption text data was preprocessed and then fed to a Word2Vec model which creates word embeddings.
+* This trained model is one of the trained models you just downloaded.
+* The other trained model was identically created but with Fox News YouTube video caption data.
+* When you type ```python3 -m transcripts -n 'fox' -sq 'biden'```, this will execute the following python code:
+    * ```python some_trained_model.most_similar('biden')```
+    * The __most_similar__ method will ask the trained model which words it has determined are most likely to appear within 
+    the context of the input term, which in this case, is 'biden'.
+* The results will be 30 such words listed from highest to lowest in terms of likelihood of appearing in the context of the 
+input word ('biden'). 
+
+Go ahead and compare the results from the model results you have already created and try creating some more.
+
+Now, for the detailed version... read on. 
+
+
 #### Data Acquisition
 So, with the goal of accomplishing the above, our journey begins with the most fundamental requirement: Acquiring the captions. For this, we use the selenium package, which is succinctly described on pypi.org: “The selenium package is used to automate web browser interaction from Python.”
 
