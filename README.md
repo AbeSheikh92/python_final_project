@@ -35,6 +35,7 @@ locally, you can run the makefile provided in order to retrieve some pre-trained
 
 This should be doable on the command-line within the local project directory via:
 * ```python3 make data```.
+
 Once you've downloaded the models, one of which is trained on YouTube video caption data from CNN and one of which is trained
 on YouTube caption data from Fox News, you can run the following on the command-line:
 * ```python3 -m transcripts -n 'fox' -sq 'biden'```
