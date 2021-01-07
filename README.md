@@ -6,9 +6,11 @@
 
 [![Test Coverage](https://api.codeclimate.com/v1/badges/f0df51fab4af19e09378/test_coverage)](https://codeclimate.com/repos/5fcf139776007c01770081cd/test_coverage)
 
-	
+*Note: The Travis CI account registered for the class ran out of credits mid-way through the project and so that is why the Travis
+badge was not able to reflect updated testing*
+
 ##### Motivation
-In a previous semester I took a class in which I was initially introduced to the concept of word embeddings and their ability to learn vector representations for words based on the context in which these words were used. This basic idea of vectorizing meaning to the best of our current abilities was not in of itself the source of my interest. Instead, I thought what would be more interesting would be to compare the learned meaning/connotation of a set of words given the neural network is separately trained (so two different models) in two different contexts which create different word associations (as a consequence of different belief systems). 
+In a previous semester I took a class in which I was initially introduced to the concept of word embeddings and their ability to learn vector representations for words based on the context in which these words were used. This basic idea of vectorizing a word's meaning to the best of our current abilities was not in of itself the source of my interest. Instead, I thought what would be more interesting would be to compare the learned meaning/connotation of a set of words given the neural network is separately trained (so two different models) in two different contexts which create different word associations (as a consequence of different belief systems). 
 
 ##### Strategy
 The specific contexts I chose were CNN and Fox News. It is my intuition that CNN and Fox News have drastically different views pertaining to a variety of issues applying to America and also the world in general. These differing views are conveyed on each news platform via language. And thus, encoded in the language is this difference in world views. The distinct encoding of views into language is accomplished through divergent word associations. As an example, if CNN had a world view in which cats were demonized as satanic death-worshipping hell-creatures, and Fox’s view encapsulated cats as paradisiacal love-puppets that sweat angel grace, this distinction in world views would certainly be conveyed in terms of the vocabulary used by each platform when speaking about cats. 
@@ -20,7 +22,7 @@ It is this difference in word associations that ultimately construct mostly non-
 ##### Libraries Used:
 | Library | Use in This Project |
 |-|-|
-| csci_utils (Our very own library): |*Provides access to functionality to preserve file extensions when writing to local targets within luigi tasks and for the of atomically writing to files* |
+| csci_utils (Our very own library): |*Provides access to functionality to preserve file extensions when writing to local targets within luigi tasks and allows for atomically writing to files* |
 | nltk (Natural Language Toolkit): | *Provides functionality to preprocess text data (ex: checking if a word is English)* |
 | genism: | *Provides access to the Word2Vec model architecture from which the word embeddings will be constructed* |
 | youtube-transcripts-api: | *Provides an API from which to retrieve YouTube video caption data* |
@@ -28,14 +30,16 @@ It is this difference in word associations that ultimately construct mostly non-
 | atomicwrites: | *Also used in parts of the code to ensure atomic writing to files* |
 
 
+*Note: The following 'Quick Start' section is meant for the instructors of the course*
+
 #### Quick Start
 
 I have done my best to make the S3 AWS Bucket public such that the below description will allow you to access its contents.
-If the below does not work, I have failed, and you should pause in a moment of silence for in condolence of this failure.
+If the below does not work, I have failed, and you should pause for a moment of silence in condolence of this failure.
 The code can still be run fine, but perhaps pre-trained models will not be available (unless I maybe include them with my
 submission along with the link to this repo).
 
-If I have managed the models with my submission, they will be in a zip file. Here's what to do with them:
+If I have managed to include the models with my submission, they will be in a zip file. Here's what to do with them:
 * Unzip them
 * One is named cnn_trained_embedding.model and one is named fox_trained_embedding.model
 * Once you have cloned this repo locally, rename them both to trained_embedding.model and place one trained model under the following path:
@@ -52,11 +56,11 @@ and then if they don't work there will be a zipfile that you can try with the ab
 to run my code, they are just a fast track to producing results without reading the whole README.md.
     
 Because the following detailed explanation is quite lengthy, this section will briefly explain how to quickly execute part 
-of the project's functionality in order to prove that is does indeed do something besides exist. Once you have cloned the repo
+of the project's functionality in order to prove that it does indeed do something besides exist. Once you have cloned the repo
 locally, you can run the makefile provided in order to retrieve some pre-trained Word2Vec models. 
 
 This should be doable on the command-line within the local project directory via:
-* ```python3 make data```.
+* ```make data```.
 
 Once you've downloaded the models, one of which is trained on YouTube video caption data from CNN and one of which is trained
 on YouTube caption data from Fox News, you can run the following on the command-line:
@@ -83,7 +87,7 @@ searches for politically controversial topics (guns, immigration, etc.).
 * This trained model is one of the trained models you just downloaded.
 * The other trained model was identically created but with Fox News YouTube video caption data.
 * When you type ```python3 -m transcripts -u True -n 'fox' -sq 'biden'```, this will execute the following python code:
-    * ```python some_trained_model.most_similar('biden')```
+    * ```some_trained_model.most_similar('biden')```
     * The __most_similar__ method will ask the trained model which words it has determined are most likely to appear within 
     the context of the input term, which in this case, is 'biden'.
 * The results will be 30 such words listed from highest to lowest in terms of likelihood of appearing in the context of the 
@@ -97,17 +101,17 @@ Now, for the detailed version... read on.
 #### Data Acquisition
 So, with the goal of accomplishing the above, our journey begins with the most fundamental requirement: Acquiring the captions. For this, we use the selenium package, which is succinctly described on pypi.org: “The selenium package is used to automate web browser interaction from Python.”
 
-Roughly following the instructions provided by this source: https://www.analyticsvidhya.com/blog/2019/05/scraping-classifying-youtube-video-data-python-selenium/, I managed to produce the ‘get_video_ids’ function in  the ‘transcripts/captions.py.’
+Roughly following the instructions provided by this source: https://www.analyticsvidhya.com/blog/2019/05/scraping-classifying-youtube-video-data-python-selenium/, I managed to produce the ‘get_video_ids’ function in  the ‘transcripts/captions.py’ file.
 The first part of this function formats a YouTube url that includes the formatted version of the YouTube query that is one of the command-line arguments the user would enter on the command line. 
 
 Throughout the course of this document, I will expand on the full command-line argument specifications the user will enter. We will build up to the full list of arguments one at a time. The first one just mentioned represents the actual query that will be entered into the YouTube search bar:
 
 Ex:
 ```bash
--q 'cnn immigration'
+-q 'immigration'
 ```
 
-The first part of the ‘get_video_ids’ function constructs a formatted YouTube url including the query and filters for those videos that have captions enabled. Still, this does not guarantee that the filtered video will all have captions enabled.
+The first part of the ‘get_video_ids’ function constructs a formatted YouTube url including the query and filters for those videos that have captions enabled. Still, this does not guarantee that the filtered videos will all have captions enabled.
 
 ```python
 def get_video_ids(query_string, scroll_amount, cycles_to_scroll, uploader):
@@ -185,7 +189,7 @@ The next set of commands can be briefly summarized as using selenium to control 
 ```
 
 * We extract the ‘href’ attribute of these HTML elements and create a set from them
-    * Another argument that user will specify on the command-line will be an argument abbreviated as ‘-ch’ which represents the YouTube channel for a video. Although it should not break the program, the user should enter either ‘cnn’ or ‘fox’ as the value for this argument.
+    * Another argument the user will specify on the command-line will be an argument abbreviated as ‘-ch’ which represents the YouTube channel for a video. Although it should not break the program, the user should enter either ‘cnn’ or ‘fox’ as the value for this argument.
         * Ex: ```-ch 'cnn'```
     * This argument is useful because if we want to retrieve videos from CNN commentary about a particular political topic, we need some way to ensure the returned results are indeed from CNN and not another channel. Before we actually extract the ‘href’ element from one of our collected HTML elements, we check the ‘aria-label’ which should contain a string that contains the substring ‘by [channel_name]’.
     * If the ‘aria-label’ attribute of the HTML element contains, in the case of CNN video results, the string ‘by cnn’, we add it to the final set of video ids.
@@ -260,12 +264,12 @@ are added to the text that will be used to train an instance of a Word2Vec model
 its contents will be useful to the model and not dilutive. 
 
 We will go over the four star functions that will help us in this process. They are:
-* gen_sample_data
-* check_gibberish
-* replace_chars
-* is_english
+* __gen_sample_data__
+* __check_gibberish__
+* __replace_chars__
+* __is_english__
 
-It will surely be more time-consuming to check each and every word of a video's returns captions list, and so perhaps choosing
+It will surely be more time-consuming to check each and every word of a video's returned captions list, and so perhaps choosing
 a sample of words from each video's captions would serve to identify which video should not be used while also minimizing the
 computational and time complexity required to do this.
 
@@ -285,10 +289,10 @@ function.
 The __check_gibberish__ function essentially receives a tokenized list of strings and passes each element (each of which is a word) of this list to the 
 __is_english__ function (after selectively filtering for which words would be best to send). The nltk corpus library can sometimes
 have issues identifying words that end with an 's' when the 's' indicates plurality. For this reason, __check_gibberish__ filters
-out these words. But before __check_gibberish__ does any of this, the incoming tokenized list of strings is preprocessed first.
+out these words. But before __check_gibberish__ does any of this, the incoming tokenized list of strings is preprocessed.
 
-Enter, __replace_chars__. The __replace_chars__ function decorates __check_gibberish__. It is within this wrapper that certain 
-characters are filtered from the data that __gen_sample_data__ is sending __check_gibberish__. The reason this filtering is necessary,
+Enter: __replace_chars__. The __replace_chars__ function decorates __check_gibberish__. It is within this wrapper that certain 
+characters are filtered from the data that __gen_sample_data__ is sending __check_gibberish__. The reason this filtering is necessary
 is that some of __gen_sample_data__'s 10 selected words may have (due to caption data peculiarities) certain characters in them
 that would confuse the nltk corpus library. Some examples may look like:
 * '>>>phone' (needs to be 'phone')
@@ -323,7 +327,7 @@ def replace_chars(func, chars_to_remove=("'", ">", "-")):
 ```
 
 Once __replace_chars__ has preprocessed the data, the decorator lets the data pass, in its new form, to __check_gibberish__.
-As mentioned above, __check_gibberish__ filters out some words (if need be) and sends them, one at a time, to the fourth function, 
+As mentioned above, __check_gibberish__ filters out some words (if need be) and sends them one at a time to the fourth function, 
 __is_english__. 
 
 ```python
@@ -352,10 +356,10 @@ def is_english(word_to_check):
         return False
 ```
 
-One final function the __check_gibberish__ function performs, is calculating what fraction of the words (for this single 10-word sample
+One final operation the __check_gibberish__ function performs, is calculating what fraction of the words (for this single 10-word sample
 for one video's captions) were indicated to be English out of all the words it sent to __is_english__. If this fraction is at least
 80%, check_gibberish returns True to its calling function, and False otherwise. The reason check_gibberish does not ensure 
-that 100% of the words must be identified to be English is for a couple reasons:
+that 100% of the words must be identified to be English is for a couple of reasons:
 * the nltk.corpus.words package will not always correctly identify English words as English
 * other erroneous processes/details may cause some English words to be misidentified as non-English
 
@@ -415,8 +419,8 @@ This function performs some of the preprocessing on this single string that was 
 This preprocessing includes:
 * remove certain characters from the string ('\n', '>', '--')
 * tokenize the string into a list where each element contains one word from the string
-* removing punctuation 
-* removing stop words 
+* remove punctuation 
+* remove stop words 
 * remove single-character words/elements
 
 Certain hyper-parameters associated with the Word2Vec model are hard-coded, including:
@@ -495,8 +499,8 @@ def remove_stop_words(list_to_filter):
     return data_minus_stop_words
 ```
 
-At this point, we have gone over the heart of the code which makes our goal, achievable. Also, just to recap, the command-line 
-usage of this program so far is achievable with an examples like the below:
+At this point, we have gone over the heart of the code which makes our goal achievable. Also, just to recap, the command-line 
+usage of this program so far is achievable with examples like the below:
 * ```python3 -m transcripts -u False -ch 'cnn' -q 'immigration' -s 20000 -c 5```
 * ```python3 -m transcripts -u False -ch 'fox' -q 'obama -s 15000```
 * ```python3 -m transcripts -u False -ch 'cnn' -q 'russia```
@@ -549,8 +553,8 @@ class GetYoutubeVideoIds(ExternalTask):  # pragma: no cover
     channel_author = Parameter(default="cnn")
 ```
 
-This major undertaking of this task is in the __run__ method, which calls the __get_video_ids__ function discussed earlier,
-and writes the returned video ids to a file whose name is constructed as such: [channel_author]_[query]_ids.txt'.
+The major undertaking of this task is in the __run__ method, which calls the __get_video_ids__ function discussed earlier,
+and writes the returned video ids to a file whose name is constructed as such: '[channel_author]_[query]_ids.txt'.
 * For example, if the command-line arguments are: ```python3 -m transcripts -u False -ch 'cnn' -q 'immigration'```, then the filename
 would be cnn_immigration_ids.txt.
 ```python
@@ -620,7 +624,7 @@ class ProcessCaptionData(Task):  # pragma: no cover
 
 Thirdly, in the __transcripts/tasks/model_results_tasks.py__ file, we have the __FeedToModel__ task. This task does the following:
 * Opens up the file where the video captions are stored
-* Sends this string to the __construct_embedding__ in order to create a Word2Vec model
+* Sends this string to the __construct_embedding__ function in order to create a Word2Vec model
 * Writes the returned model to a file whose full path is constructed as such:
     * data/models/[channel_author]_[query]_captions/trained_embedding.model
 
@@ -672,13 +676,13 @@ class FeedToModel(Task):  # pragma: no cover
             trained_model.save(output_target.name)
 ```
 
-Fourthly, we have in the same file, the AnalyzeModelResults task. This task does the following:
+Fourthly, we have in the same file, the __AnalyzeModelResults__ task. This task does the following:
 * Opens the file where the trained model is stored
 * Queries the model using the __most_similar__ method with a command-line argument abbreviated as '-sq'
     * Ex: ```-sq 'biden'```: command-line argument
     * Ex: trained_model.most_similar([term_of_interest]): usage of __most_similar__ method with the term entered on the command-line
-* Write the 30 (hard-coded) returned words that the trained model determines are most likely (sorted from highest probability to 
-lowest) to appear in the context of the word with which it has been queried
+* Write the 30 (hard-coded) returned words, that the trained model determines are most likely (sorted from highest probability to 
+lowest) to appear in the context of the word with which it has been queried, to file
 * Print the results of the model to screen
 
 At this point, the full command-line specifications (including the less important '-s' and '-c' ones) are:
@@ -750,27 +754,27 @@ class AnalyzeModelResults(Task):  # pragma: no cover
 It was at this point in the development, when I further realized that the model would be much better if it was trained on 
 the collection of [channel_author]_[query]_captions.txt files I had at this point accumulated. Throughout the evolution of this
 project I executed the project on a number of different controversial political topics, searching YouTube for both CNN and 
-Fox News' responses. As such, any one caption text file was insignificant compared to the small corpus which all of them together
+Fox News responses. As such, any one caption text file was insignificant compared to the small corpus which all of them together
 defined. 
 
 Things to note:
 * This task and the next one to be discussed are not designed such that they will trigger the four previous tasks. Although, it 
 is the case that these will only produce any output if the four previous tasks have been used to produce at least one captions text
 file for the news organization for which you will be executing the __CreateAccumulatedModel__ task.
-* Let's assume the four previous tasks have been run and have produced a number of caption text files for Fox News. If you
+* Let's assume the four previous tasks have been run and have produced a number of caption text files for CNN. If you
 now execute: ```python3 -m transcripts -u True -n 'cnn'```, the next task to be discussed (__CreateAccumulatedModel__), will go into the __data__ directory,
 compile all the files which contain 'cnn' and 'captions' in their filename into one large file by the name of 'cnn_ALL_CAPTIONS.txt'
 within the same __data__ directory.  
 
 In order to distinguish which set of tasks you would like to run, either the first four:
-* GetYouTubeVideos
-* ProcessCaptionData
-* FeedToModel
-* AnalyzeModelResults
+* __GetYouTubeVideos__
+* __ProcessCaptionData__
+* __FeedToModel__
+* __AnalyzeModelResults__
 
 or the second two:
-* CreateAccumulatedModel
-* QueryUltraModel
+* __CreateAccumulatedModel__
+* __QueryUltraModel__
 
 You will use the '-u' command-line argument which will be a boolean True/False:
 * ```python3 -m transcripts -u True -ch 'cnn' -sq 'biden'```
@@ -785,9 +789,9 @@ One more thing to note is:
 * then run the project with -u set to True again
 
 Then, whatever new caption text files were added to the list of text files in the __data__ directory from step 2 above 
-will not be added to the compiled text file that was created in step 1 above was you run step 3 above. This is because
+will not be added to the compiled text file that was created in step 1 above when you run step 3 above. This is because
 the __CreateAccumulatedModel__ task (one of two) invoked by step 3 which is responsible for producing this compiled text file will detect its task output path
-already exists and such that task will be skipped and only the __QueryUltraModel__ task will be executed. The way around this
+already exists and that task will be skipped and only the __QueryUltraModel__ task will be executed. The way around this
 is to delete the files at the __CreateAccumulatedModel__ task's output path and then start from step two above.  
 
 Automating this deletion or incorporating salting to avoid this is one of the improvements that can be made to this project
@@ -827,7 +831,7 @@ def compile_all_captions(root_dir, news_organization="cnn"):
 ```
 
 * Send this data to the __construct_embedding__ function to train a new Word2Vec model (hopefully superior)
-* Write the returned trained model to an output file who full path is constructed as such:
+* Write the returned trained model to an output file whose full path is constructed as such:
     * data/models/ALL_CAPTIONS_[news_organization]/trained_embedding.model
     * Ex: data/models/ALL_CAPTIONS_CNN/trained_embedding.model (in this case, this is for CNN)
 
@@ -884,7 +888,7 @@ class CreateAccumulatedModel(ExternalTask):  # pragma: no cover
             ultra_model.save(output_target.name)
 ```
 
-Now that we have the a new trained model that has 'learned' from a substantially larger corpus of text, we should query it.
+Now that we have the new trained model that has 'learned' from a substantially larger corpus of text, we should query it.
 This is where, in this same __transcripts/tasks/assemble_tasks.py__ file we find the __QueryUltraModel__ task. This task does 
 the following:
 * Opens the file where the newly trained ULTRA model is stored
@@ -981,10 +985,9 @@ nearly 6,000 code-infused words and still retain their sanity.
 7. Treating of functions as first-class variables via decorators
 8. Interfacing with remote database structures such as AWS S3
 9. Use of more advanced functional methodologies (lambda / map / reduce / Comprehensions)
-10. Unit tests
-11. Continuous integration / development via Travis / CC
-12. Isolation via virtual environments (thanks to Pipenv)
-13. Successful interfacing with third-part API
+10. Unit tests / Continuous integration / development via Travis / CC
+11. Isolation via virtual environments (thanks to Pipenv)
+12. Successful interfacing with third-part API
 
 
 #### Future Improvements
